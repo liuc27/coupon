@@ -1,21 +1,21 @@
 angular.module('starter.controllers', [])
 
-.controller('CouponCtrl', function ($scope, localStorageService, types) {
+  .controller('CouponCtrl', function ($scope, localStorageService, types) {
   $scope.items = types.allItems();
 
 })
 
-.controller('typesCtrl', function ($scope, types) {
+  .controller('typesCtrl', function ($scope, types) {
   $scope.types = types.all();
 })
 
-.controller('typeDetailCtrl', function ($scope, $stateParams, types) {
+  .controller('typeDetailCtrl', function ($scope, $stateParams, types) {
   $scope.type = types.get($stateParams.typeId);
   $scope.checked = types.favoriteList();
 
 })
 
-.controller('CouponDetailCtrl', function ($scope, $stateParams, localStorageService, $ionicPopup, types, $http) {
+  .controller('CouponDetailCtrl', function ($scope, $stateParams, localStorageService, $ionicPopup, types, $http) {
 
   $scope.types = types.all();
   $scope.items = types.allItems();
@@ -29,32 +29,20 @@ angular.module('starter.controllers', [])
   $scope.favoritesText = "点击领取";
 
   $scope.clicked = false;
-        $scope.comment = [];
-        var theNewCoupon = angular.copy($scope.coupon);
-        $scope.comment.push({"thx":theNewCoupon.productName})
+  $scope.comment = types.comment($stateParams.couponId);
+  var theNewCoupon = angular.copy($scope.coupon);
+  //$scope.comment.push({"text":theNewCoupon.productName})
 
-        $scope.submitComment = function () {
-            var couponName = $scope.coupon.name
-            $http.post("http://120.24.168.7:3000/api/comment",{
-                "name": couponName,
-                "comment": $scope.comment.comment
-            }).success(function (data) {
-                console.log(data)
-                $scope.items = data;
-                $rootScope.items = data;
-                localStorageService.set("itemsData", data)
-            })
-                .finally(function () {
-                    $scope.$broadcast('scroll.refreshComplete')
-                });
-            /*
-             reloadBroad($state.reload())
-             function reloadBroad() {
-             $scope.$broadcast('scroll.refreshComplete')
-             }
-             */
-
-        };
+  $scope.submitComment = function () {
+    var couponName = $scope.coupon.name
+    $http.post("http://localhost:3000/api/comment",{
+      "name": couponName,
+      "comment": $scope.comment.comment
+    }).success(function (data) {
+      console.log(data)
+      $scope.comment = data[0].comment
+    })
+  };
 
   var exist;
   console.log($scope.checked);
@@ -83,7 +71,7 @@ angular.module('starter.controllers', [])
         }
       });
       if (notExist) {
-        $http.post("http://120.24.168.7:3000/api/add", {
+        $http.post("http://localhost:3000/api/add", {
           "name": couponName
         }).success(function (data) {
           if (data === "couldn't find") {
@@ -124,7 +112,7 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('favoriteListCtrl', function ($scope, $stateParams, localStorageService, types) {
+  .controller('favoriteListCtrl', function ($scope, $stateParams, localStorageService, types) {
   //localStorageService.clearAll()
   $scope.types = types.all();
   $scope.items = types.allItems();
@@ -137,10 +125,9 @@ angular.module('starter.controllers', [])
   }
 
 
-
 })
 
-.controller('favoriteDetailCtrl', function ($scope, $stateParams, localStorageService, types, $http) {
+  .controller('favoriteDetailCtrl', function ($scope, $stateParams, localStorageService, types, $http) {
   console.log(parseInt($stateParams.favoriteId))
   if (localStorageService.get("checkedData")) {
     $scope.checked = localStorageService.get("checkedData")
@@ -167,70 +154,114 @@ angular.module('starter.controllers', [])
     }
   };
 
+  
+  $scope.clicked = false;
+  $scope.comment = $scope.favoriteCoupon.comment;
+  var theNewCoupon = angular.copy($scope.coupon);
+
+  $scope.submitComment = function () {
+    var couponName = $scope.favoriteCoupon.name
+    $http.post("http://localhost:3000/api/comment",{
+      "name": couponName,
+      "comment": $scope.comment.comment
+    }).success(function (data) {
+      console.log(data)
+      $scope.comment = data[0].comment
+    })
+  };
 
 })
   .controller('MenuCtrl', function ($scope, types, $http, $ionicSideMenuDelegate, localStorageService, $location) {
-    $scope.register = function (username, password) {
-      $http.post("http://120.24.168.7:3000/api/user", {
-        "username": username,
-        "password": password
-      }).success(function (data) {
-        if (data === "already registered") {
-          alert("用户名已经注册，请换用户名！");
-        } else {
-          alert("注册成功！");
-          $location.path('#/tab/coupon');
-          localStorageService.set("usernameDate", data);
+  $scope.register = function (username, password) {
+    $http.post("http://localhost:3000/api/user", {
+      "username": username,
+      "password": password
+    }).success(function (data) {
+      if (data === "already registered") {
+        alert("用户名已经注册，请换用户名！");
+      } else {
+        alert("注册成功！");
+        $location.path('#/tab/coupon');
+        localStorageService.set("usernameDate", data);
+      }
+    });
+  };
+})
+  .controller('MyCtrl', function ($scope, types, $http, localStorageService, $state) {
+  $scope.doRefresh = function () {
 
+    $http.get("http://localhost:3000/api/posts").success(function (data) {
+      console.log(data.length)
+      if (localStorageService.get("checkedData")) {
+        checked = localStorageService.get("checkedData")
+      }
+      for (var i = 0; i < data.length; i++) {
+        var x = data[i];
+        console.log(x.name)
+        console.log(checked)
+        console.log(theChecked)
 
-        }
-      });
-    };
-  })
-  .controller('MyCtrl', function ($rootScope, $scope, types, $http, localStorageService, $state) {
-    $scope.doRefresh = function () {
+        angular.forEach(checked, function (value) {
+          if (value.name == x.name && value.category == x.category && value.productIntroduction == x.productIntroduction && value.productName == x.productName) {
+            console.log("true")
+            var z = true;
+            angular.forEach(theChecked, function (existence) {
+              if (existence.name == x.name) {
+                z = false;
+              }
+            });
+            if (z == true) {
+              theChecked.push(x)
+              //console.log(theChecked)
+            }
+          }
+          localStorageService.set("checkedData", theChecked)
 
-      $http.get("http://120.24.168.7:3000/api/posts").success(function (data) {
-        console.log(data)
-        $scope.items = data;
-        $rootScope.items = data;
-        localStorageService.set("itemsData", data)
-      })
-        .finally(function () {
-          $scope.$broadcast('scroll.refreshComplete')
+          //console.log(theChecked)
+          //console.log(localStorageService.get("checkedData"))
         });
-      /*
+      }
+      localStorageService.set("itemsData", data)
+      $scope.items = data
+      for (i = 0; i < items.length; i++) {
+        items[i].id = i;
+      }
+    })
+      .finally(function () {
+      $scope.$broadcast('scroll.refreshComplete')
+    });
+    /*
             reloadBroad($state.reload())
             function reloadBroad() {
                 $scope.$broadcast('scroll.refreshComplete')
             }
             */
-    }
+  }
 
 
-    $scope.$on('myService:getUserConfigSuccess', function () {
-      $scope.currentTime = new Date();
-      $scope.items = types.allItems();
-      if (localStorageService.get("checkedData")) {
-        $scope.checked = localStorageService.get("checkedData")
-      }
-    });
+  $scope.$on('myService:getUserConfigSuccess', function () {
+    $scope.currentTime = new Date();
+    $scope.items = types.allItems();
     if (localStorageService.get("checkedData")) {
       $scope.checked = localStorageService.get("checkedData")
     }
-    console.log($scope.checked)
-    $scope.find = function (x) {
-      var y = false
-      angular.forEach($scope.checked, function (value) {
-        if (value.name == x.name && value.category == x.category && value.productIntroduction == x.productIntroduction && value.productName == x.productName) {
-          console.log("true")
-          y = true
-        }
-      });
-      return y;
-    }
-
-    $scope.currentTime = new Date();
-    $scope.items = types.allItems();
-
   });
+  if (localStorageService.get("checkedData")) {
+    $scope.checked = localStorageService.get("checkedData")
+  }
+  console.log($scope.checked)
+  $scope.find = function (x) {
+    var y = false
+    angular.forEach($scope.checked, function (value) {
+      if (value.name == x.name && value.category == x.category && value.productIntroduction == x.productIntroduction && value.productName == x.productName) {
+        console.log("true")
+        y = true
+      }
+    });
+    return y;
+  }
+
+  $scope.currentTime = new Date();
+  $scope.items = types.allItems();
+
+});
