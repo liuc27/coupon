@@ -8,12 +8,12 @@ angular.module('starter.services', [])
         var checked = new Array();
         var i, theChecked = new Array();
         //localStorageService.clearAll();
-        $http.get("http://120.24.168.7:3000/api/types").success(function (data) {
+        $http.get("http://localhost:3000/api/types").success(function (data) {
             console.log(data)
             localStorageService.set("typesData", data)
             types = data;
         })
-        $http.get("http://120.24.168.7:3000/api/posts").success(function (data) {
+        $http.get("http://localhost:3000/api/posts").success(function (data) {
             console.log(data.length)
             if (localStorageService.get("checkedData")) {
                 checked = localStorageService.get("checkedData")
@@ -74,6 +74,9 @@ angular.module('starter.services', [])
             },
             favoriteList: function () {
                 return checked;
-            }
+            },
+          comment: function (couponId) {
+            return items[couponId].comment;
+          }
         }
     });
