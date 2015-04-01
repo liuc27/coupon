@@ -15,30 +15,38 @@
 
             <div class="item item-body">
                 <img class="full-image" src="{{coupon.image}}">
-                <p>
-                    {{coupon.productDetail}}
-                </p>
-                <!-- <p>
-                     <a href="#" class="subdued">1 Like</a>
-                     <a href="#" class="subdued">5 Comments</a>
-                 </p>-->
-            </div>
+              <p font>
+                {{coupon.productDetail}}
+              </p>
+              <p>
+                <a href="#" class="subdued font">1 顶</a>
+                <a href="#" class="subdued font">{{comment.length}}评价</a>
+              </p>
+          </div>
 
-            <!--<div class="item tabs tabs-secondary tabs-icon-left">
-                <a class="tab-item" href="#">
-                    <i class="icon ion-thumbsup"></i>
-                    Like
-                </a>
-                <a class="tab-item" href="#">
-                    <i class="icon ion-chatbox"></i>
-                    Comment
-                </a>
-                <a class="tab-item" href="#">
-                    <i class="icon ion-share"></i>
-                    Share
-                </a>
-            </div>-->
-
-        </div>
-    </ion-content>
+          <div class="item tabs tabs-secondary tabs-icon-left">
+            <a class="tab-item" href="#">
+              <i class="icon ion-thumbsup"></i>
+              顶
+            </a>
+            <a class="tab-item" ng-click="showComment=!showComment">
+              <i class="icon ion-chatbox"></i>
+              评价
+            </a>
+            <!--<a class="tab-item" href="#">
+<i class="icon ion-share"></i>
+分享
+</a>-->
+          </div>
+          <div ng-repeat = "xxx in comment">
+            <div>{{xxx.title}}</div>
+            <div>{{xxx.date|date:'yyyy年MM月dd日HH时mm分'}}</div>
+          </div>
+          <div ng-show="showComment">
+            <input class="comment" type="text" ng-model="comment.comment">
+            <button ng-click="submitComment()">提交</button>
+          </div>
+          <div>{{comment.comment}}</div>
+      </div>
+  </ion-content>
 </ion-view>
